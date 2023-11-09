@@ -337,7 +337,7 @@ class NetManager:
             self.modem_connman = None
             self.modem_netreg = None
             self.modem_lte = None
-            self.autoconf_lte = False
+            self.lte_going_online = False
             self.ofono = dbus.Interface(
                 self.bus.get_object(OFONO_BUS_NAME, OFONO_ROOT_PATH),
                 OFONO_MANAGER_IFACE,
@@ -773,12 +773,6 @@ class NetManager:
         if name == "Model" and value == GEMALTO_MODEM_MODEL:
             syslog("{} detected!".format(GEMALTO_MODEM_MODEL))
             self.modem_present = True
-            # If the LTE connection exists, the modem has already been
-            # configured, so bring it online
-            if self.is_lte_configured():
-                syslog("Modem configured, going online.")
-                self.modem.SetProperty("Online", True)
-                return
         if self.modem_present and name == "Interfaces":
             if OFONO_SIM_IFACE in value:
                 if self.modem_sim is None:
@@ -812,18 +806,17 @@ class NetManager:
                     )
             elif self.modem_lte is not None:
                 self.modem_lte = None
-            # Check all interfaces are present and we should auto-configure
-            if (
-                self.modem_present
-                and not self.is_lte_configured()
-                and not self.autoconf_lte
-                and self.is_lte_autoconf()
-                and self.modem_sim
-                and self.modem_connman
-                and self.modem_lte
-            ):
+        # Check if all interfaces are present
+        if self.modem_sim and self.modem_connman and self.modem_lte and self.modem.netreg:
+            if self.is_lte_configured() and not self.lte_going_online:
+                # If the LTE connection exists, the modem has already been
+                # configured, so bring it online
+                syslog("Modem fully configured, going online.")
+                self.lte_going_online = True
+                self.modem.SetProperty("Online", True)
+            elif not self.lte_going_online and self.is_lte_autoconf():
                 syslog("Performing LTE autoconfiguration!")
-                self.autoconf_lte = True
+                self.lte_going_online = True
                 self.req_connect_lte({}, self.autoconf_cb)
 
     def wwan_dev_props_changed(self, iface, props_changed, props_invalidated):
