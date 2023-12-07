@@ -766,6 +766,12 @@ class NetManager:
         self.modem = dbus.Interface(
             self.bus.get_object(OFONO_BUS_NAME, self.modem_path), OFONO_MODEM_IFACE
         )
+        self.modem_present = False
+        self.modem_sim = None
+        self.modem_connman = None
+        self.modem_netreg = None
+        self.modem_lte = None
+        self.lte_going_online = False
         self.modem.connect_to_signal("PropertyChanged", self.modem_prop_changed)
         self.modem.SetProperty("Powered", True)
 
