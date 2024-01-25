@@ -48,6 +48,7 @@ NM_SETTINGS_OBJ = "/org/freedesktop/NetworkManager/Settings"
 NM_OBJ = "/org/freedesktop/NetworkManager"
 NM_CONNECTION_IFACE = "org.freedesktop.NetworkManager.Settings.Connection"
 NM_DEVICE_IFACE = "org.freedesktop.NetworkManager.Device"
+NM_WIRED_DEVICE_IFACE = "org.freedesktop.NetworkManager.Device.Wired"
 NM_WIFI_DEVICE_IFACE = "org.freedesktop.NetworkManager.Device.Wireless"
 DBUS_PROP_IFACE = "org.freedesktop.DBus.Properties"
 NM_CONNECTION_ACTIVE_IFACE = "org.freedesktop.NetworkManager.Connection.Active"
@@ -348,6 +349,12 @@ class NetManager:
 
     def get_wlan_hw_address(self):
         return str(self.wifi_dev_props.Get(NM_WIFI_DEVICE_IFACE, "HwAddress"))
+
+    def get_eth0_hw_address(self):
+        eth0_dev_obj = self.bus.get_object(NM_IFACE, self.nm.GetDeviceByIpIface("eth0"))
+        eth0_props = dbus.Interface(eth0_dev_obj, DBUS_PROP_IFACE)
+        eth0_addr = eth0_props.Get(NM_WIRED_DEVICE_IFACE, "PermHwAddress").lower()
+        return eth0_addr
 
     def find_conn_by_id(self, conn_id):
         conns = self.nm_settings.ListConnections()
