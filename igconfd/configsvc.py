@@ -34,8 +34,18 @@ class ConfigurationService(Application):
         self.register_le_services()
         subprocess.call(["btmgmt", "power", "on"])
 
-    def stop(self):
+    def disable_ble_service(self):
         syslog("Disabling BLE service.")
         self.disconnect_devices()
-        self.deregister_le_services()
+        self.deregister_gatt_services()
         subprocess.call(["btmgmt", "power", "off"])
+        return False
+
+    def stop(self):
+        # Unregister LE Advertisement
+        self.deregister_le_services()
+        # Stop GATT service after a delay to allow last status message to be sent
+        gobject.timeout_add(2000, self.disable_ble_service)
+        # Stop message timeout callback
+        self.msg_manager.set_msg_timeout(None, None)
+

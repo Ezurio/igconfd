@@ -57,14 +57,6 @@ class CustomService(ConfigurationService):
         self.device_svc.SetBLEState(BLE_STATE_ACTIVE)
         subprocess.call(["btmgmt", "power", "on"])
 
-    def disable_ble_service(self):
-        syslog("Disabling BLE service.")
-        self.disconnect_devices()
-        self.device_svc.SetBLEState(BLE_STATE_INACTIVE)
-        self.deregister_gatt_services()
-        subprocess.call(["btmgmt", "power", "off"])
-        return False
-
     def start(self):
         if self.greengrass_prov_state or self.edge_iq_prov_state:
             syslog("Device is provisioned, skipping BLE service.")
@@ -75,7 +67,9 @@ class CustomService(ConfigurationService):
     def stop(self):
         # Unregister LE Advertisement
         self.deregister_le_services()
-        # Stop after a delay to allow last status message to be sent
+        # Turn off configuration LED
+        self.device_svc.SetBLEState(BLE_STATE_INACTIVE)
+        # Stop GATT service after a delay to allow last status message to be sent
         gobject.timeout_add(2000, self.disable_ble_service)
         # Stop message timeout callback
         self.msg_manager.set_msg_timeout(None, None)
