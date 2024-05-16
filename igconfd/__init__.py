@@ -8,7 +8,7 @@ from . import configsvc
 
 from gi.repository import GLib as glib
 
-DEVICE_IG60 = "Laird IG60"
+DEVICE_IG60 = "Sentrius IG60"
 PROC_DEVICE_TREE_MODEL = "/proc/device-tree/model"
 CONFIG_FILE = "/etc/ig60config"
 
