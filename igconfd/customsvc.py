@@ -33,7 +33,7 @@ class CustomService(ConfigurationService):
     def __init__(self, device):
 
         ConfigurationService.__init__(self, device)
-        syslog("Starting Laird IG60 configuration service.")
+        syslog("Starting Sentrius IG60 configuration service.")
         self.device_svc = dbus.Interface(
             self.bus.get_object(DEVICE_SVC_NAME, DEVICE_SVC_PATH), DEVICE_IFACE
         )
@@ -55,7 +55,7 @@ class CustomService(ConfigurationService):
         syslog("Enabling BLE service.")
         self.register_le_services()
         self.device_svc.SetBLEState(BLE_STATE_ACTIVE)
-        subprocess.call(["btmgmt", "power", "on"])
+        subprocess.call(["bluetoothctl", "mgmt.power", "on"])
 
     def start(self):
         if self.greengrass_prov_state or self.edge_iq_prov_state:

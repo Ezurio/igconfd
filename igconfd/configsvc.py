@@ -32,13 +32,13 @@ class ConfigurationService(Application):
     def start(self):
         syslog("Enabling BLE service.")
         self.register_le_services()
-        subprocess.call(["btmgmt", "power", "on"])
+        subprocess.call(["bluetoothctl", "mgmt.power", "on"])
 
     def disable_ble_service(self):
         syslog("Disabling BLE service.")
         self.disconnect_devices()
         self.deregister_gatt_services()
-        subprocess.call(["btmgmt", "power", "off"])
+        subprocess.call(["bluetoothctl", "mgmt.power", "off"])
         return False
 
     def stop(self):
