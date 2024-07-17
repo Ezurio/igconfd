@@ -222,12 +222,12 @@ class Application(dbus.service.Object):
         syslog("Configuring BLE advertisement settings.")
         # Need to use BlueZ util to set these, they are not
         # available via DBus API.
-        subprocess.call(["btmgmt", "power", "off"])
-        subprocess.call(["btmgmt", "le", "on"])
-        subprocess.call(["btmgmt", "connectable", "on"])
-        subprocess.call(["btmgmt", "bredr", "off"])
-        subprocess.call(["btmgmt", "io-cap", "3"])
-        subprocess.call(["btmgmt", "bondable", "off"])
+        subprocess.call(["bluetoothctl", "mgmt.power", "off"])
+        subprocess.call(["bluetoothctl", "mgmt.le", "on"])
+        subprocess.call(["bluetoothctl", "mgmt.connectable", "on"])
+        subprocess.call(["bluetoothctl", "mgmt.bredr", "off"])
+        subprocess.call(["bluetoothctl", "mgmt.io-cap", "3"])
+        subprocess.call(["bluetoothctl", "mgmt.bondable", "off"])
         # Configure kernel BLE settings used in slave mode, that are only
         # available through debugfs
         self.write_debugfs_val("conn_max_interval", LE_CONN_MAX_INTERVAL)
