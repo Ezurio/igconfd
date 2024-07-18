@@ -12,9 +12,7 @@ DEVICE_IG60 = "Sentrius IG60"
 PROC_DEVICE_TREE_MODEL = "/proc/device-tree/model"
 CONFIG_FILE = "/etc/ig60config"
 
-
 def main():
-
     openlog("IG.ConfService")
     syslog("Starting main loop.")
 
@@ -24,23 +22,18 @@ def main():
 
     try:
         with open(PROC_DEVICE_TREE_MODEL, "r") as f:
-            model = f.read()
-            model = model.rstrip("\x00")
-            f.close()
+            model = f.read().rstrip("\x00")
     except IOError as e:
-        syslog("failed to read {}".format(PROC_DEVICE_TREE_MODEL))
+        syslog("failed to read %s: %s" % (PROC_DEVICE_TREE_MODEL, e))
         return 1
 
     config = None
     try:
         with open(CONFIG_FILE, "r") as f:
-            config = f.readline()
-            config = config.rstrip("\n")
-            f.close()
+            config = f.readline().rstrip("\n")
     except IOError as e:
-        syslog("failed to read value of {}".format(CONFIG_FILE))
+        syslog("failed to read %s: %s" % (CONFIG_FILE, e))
 
-    manager = None
     if config is not None:
         manager = customsvc.CustomService(config)
     else:
