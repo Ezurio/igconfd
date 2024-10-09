@@ -320,6 +320,7 @@ class NetManager:
             self.ap_objs = None
             self.in_full_scan = False
             self.ap_scan_pending = True
+            self.ap_scanning = False
             self.new_conn_obj = None
             self.connectivity = self.nm_props.Get(NM_IFACE, "Connectivity")
             self.activated = False
