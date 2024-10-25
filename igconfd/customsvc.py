@@ -28,7 +28,6 @@ BLE_STATE_INACTIVE = 0
 
 BUTTON_PRESS_MSG_TIMEOUT_MS = 60000
 
-
 class CustomService(ConfigurationService):
     def __init__(self, device):
 
@@ -55,7 +54,7 @@ class CustomService(ConfigurationService):
         syslog("Enabling BLE service.")
         self.register_le_services()
         self.device_svc.SetBLEState(BLE_STATE_ACTIVE)
-        subprocess.call(["bluetoothctl", "mgmt.power", "on"])
+        self.set_ble_power(True)
 
     def start(self):
         if self.greengrass_prov_state or self.edge_iq_prov_state:
