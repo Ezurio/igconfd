@@ -7,6 +7,7 @@ import os, os.path
 import time
 import subprocess
 from syslog import syslog
+from btsocket import btmgmt_sync
 
 from . import leadvert
 from . import vspsvc
@@ -33,6 +34,10 @@ LE_ADV_MAX_INTERVAL = 800  # 500 ms
 IGCONFD_SVC = "com.lairdtech.security.ConfigService"
 IGCONFD_OBJ = "/com/lairdtech/security/ConfigService"
 
+BT_MGMT_INSTANCE = 0
+BT_MGMT_OFF = 0
+BT_MGMT_ON = 1
+BT_MGMT_IOCAP_NO_INPUT_NO_OUTPUT = 3
 
 class Application(dbus.service.Object):
     """
@@ -220,14 +225,13 @@ class Application(dbus.service.Object):
 
     def init_ble_service(self):
         syslog("Configuring BLE advertisement settings.")
-        # Need to use BlueZ util to set these, they are not
-        # available via DBus API.
-        subprocess.call(["bluetoothctl", "mgmt.power", "off"])
-        subprocess.call(["bluetoothctl", "mgmt.le", "on"])
-        subprocess.call(["bluetoothctl", "mgmt.connectable", "on"])
-        subprocess.call(["bluetoothctl", "mgmt.bredr", "off"])
-        subprocess.call(["bluetoothctl", "mgmt.io-cap", "3"])
-        subprocess.call(["bluetoothctl", "mgmt.bondable", "off"])
+        # Use management API to configure BT
+        btmgmt_sync.send("SetPowered", BT_MGMT_INSTANCE, BT_MGMT_OFF)
+        btmgmt_sync.send("SetLowEnergy", BT_MGMT_INSTANCE, BT_MGMT_ON)
+        btmgmt_sync.send("SetConnectable", BT_MGMT_INSTANCE, BT_MGMT_ON)
+        btmgmt_sync.send("SetBREDR", BT_MGMT_INSTANCE, BT_MGMT_OFF)
+        btmgmt_sync.send("SetIOCapability", BT_MGMT_INSTANCE, BT_MGMT_IOCAP_NO_INPUT_NO_OUTPUT, noresp=True) # No response data
+        btmgmt_sync.send("SetBondable", BT_MGMT_INSTANCE, BT_MGMT_OFF)
         # Configure kernel BLE settings used in slave mode, that are only
         # available through debugfs
         self.write_debugfs_val("conn_max_interval", LE_CONN_MAX_INTERVAL)
@@ -238,6 +242,9 @@ class Application(dbus.service.Object):
         time.sleep(1.0)
         self.write_debugfs_val("conn_min_interval", LE_CONN_MIN_INTERVAL)
         self.write_debugfs_val("adv_max_interval", LE_ADV_MAX_INTERVAL)
+
+    def set_ble_power(self, powered):
+        btmgmt_sync.send("SetPowered", BT_MGMT_INSTANCE, BT_MGMT_ON if powered else BT_MGMT_OFF)
 
     def register_le_services(self):
         syslog("Registering GATT application...")

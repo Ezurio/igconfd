@@ -14,7 +14,6 @@ from .ltestat import LTEStat
 
 from gi.repository import GObject as gobject
 
-
 class ConfigurationService(Application):
     def __init__(self, device):
         bus = dbus.SystemBus()
@@ -32,13 +31,13 @@ class ConfigurationService(Application):
     def start(self):
         syslog("Enabling BLE service.")
         self.register_le_services()
-        subprocess.call(["bluetoothctl", "mgmt.power", "on"])
+        self.set_ble_power(True)
 
     def disable_ble_service(self):
         syslog("Disabling BLE service.")
         self.disconnect_devices()
         self.deregister_gatt_services()
-        subprocess.call(["bluetoothctl", "mgmt.power", "off"])
+        self.set_ble_power(False)
         return False
 
     def stop(self):
