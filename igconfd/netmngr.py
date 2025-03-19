@@ -70,7 +70,7 @@ IG_CONN_NAME = "ig-connection"
 PAC_FILE = b"/var/lib/private/autoP.pac"
 
 LTE_CONN_NAME = "lte-connection"
-WWAN_DEV_NAME = "usb0"
+WWAN_DEV_NAME = "wwan0"
 LTE_ROUTE_METRIC = 700
 LTE_ROUTE_METRIC_HIGH = 500
 BYTES_IPV4 = b"ipv4"
@@ -255,7 +255,7 @@ def create_lte_conn(conn_name, ifname, prefer_lte=False):
         {
             b"connection": dbus.Dictionary(
                 {
-                    b"type": b"802-3-ethernet",
+                    b"type": b"generic",
                     b"id": conn_name.encode(),
                     b"autoconnect": True,
                     b"autoconnect-retries": 0,
@@ -312,6 +312,14 @@ class NetManager:
             self.nm_settings = dbus.Interface(
                 self.bus.get_object(NM_IFACE, NM_SETTINGS_OBJ), NM_SETTINGS_IFACE
             )
+
+            conn = self.find_conn_by_id(LTE_CONN_NAME)
+            if conn and conn.GetSettings()["connection"]["type"] != "generic":
+                conn.Delete()
+                conn = create_lte_conn(LTE_CONN_NAME, WWAN_DEV_NAME)
+                self.nm_settings.AddConnection(conn)
+                syslog("Network Manager Connection '%s' was recreated." % LTE_CONN_NAME)
+
             self.wifi_dev_obj = self.bus.get_object(
                 NM_IFACE, self.nm.GetDeviceByIpIface("wlan0")
             )
