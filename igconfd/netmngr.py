@@ -357,7 +357,7 @@ class NetManager:
             pass
 
     def get_wlan_hw_address(self):
-        return str(self.wifi_dev_props.Get(NM_WIFI_DEVICE_IFACE, "HwAddress"))
+        return str(self.wifi_dev_props.Get(NM_WIFI_DEVICE_IFACE, "PermHwAddress"))
 
     def get_eth0_hw_address(self):
         eth0_dev_obj = self.bus.get_object(NM_IFACE, self.nm.GetDeviceByIpIface("eth0"))
